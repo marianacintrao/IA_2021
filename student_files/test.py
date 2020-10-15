@@ -27,7 +27,8 @@ def test2():
     initial_state = RRState(board)
 
     # Mover o robô azul para a esquerda:
-    result_state = problem.result(initial_state, ('B', 'l'))
+    result_state = problem.result(initial_state, ('B', 'l')) 
+    #ricochet robots e' o tipo
 
     # Imprimir a posição do robô azul:
     print(result_state.board.robot_position('B'))
@@ -42,11 +43,17 @@ def test3():
     # Criar um estado com a configuração inicial:
     s0 = RRState(board)
 
+
     # Aplicar as ações que resolvem a instância
     s1 = problem.result(s0, ('B', 'l'))
+    print(s1.board.robot_position('B'))
     s2 = problem.result(s1, ('Y', 'u'))
+    print(s2.board.robot_position('Y'))
     s3 = problem.result(s2, ('R', 'r'))
+    print(s3.board.robot_position('R'))
     s4 = problem.result(s3, ('R', 'u'))
+    print(s4.board.robot_position('R'))
+    
 
     # Verificar que o robô está no alvo:
     print(problem.goal_test(s4))

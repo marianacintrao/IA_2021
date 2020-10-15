@@ -20,7 +20,7 @@ class RRState:
         RRState.state_id += 1
 
     def __lt__(self, other):
-    	""" Este método é utilizado em caso de empate na gestão da lista
+        """ Este método é utilizado em caso de empate na gestão da lista
         de abertos nas procuras informadas. """
         return self.id < other.id
 
@@ -28,75 +28,108 @@ class RRState:
 class Board:
     """ Representacao interna de um tabuleiro de Ricochet Robots. """
 
-    robots = {}
-    goal = {}
-    walls = []
+
 
     def __init__(self, n):
         self.n = n
+        self.robots = {}
+        self.goal = {}
+        self.walls = []
 
     def robot_position(self, robot: str):
         """ Devolve a posição atual do robô passado como argumento. """
-        # TODO
-        pass
+        return self.robots[robot]
 
-    # TODO: outros metodos da classe
-    def addRobot(self, robotInput: list):
-        robots[robotInput[0]] =  [ int(x) for x in robotInput[1:] ]
+
+    def addRobot(self, robotInput):
+        self.robots[robotInput[0]] = (int(robotInput[1]), int(robotInput[2]))
         
-    def addGoal(self, goalInput)
-        goal[goalInput[0]] = [ int(x) for x in goalInput[1:] ]
+    def addGoal(self, goalInput):
+        self.goal[goalInput[0]] = (int(goalInput[1]), int(goalInput[2]))
 
-[[1,1]]  + [[2,1]]
-[[1,1],[2,1]]
+    def addWall(self, wallInput): 
+        coord = (int(wallInput[0]), int(wallInput[1]))
+        lst = [coord]
+        direction = wallInput[-1]
+        lst += [self.nextPosition(coord, direction)]
 
-    def addWall(self, wallInput) # por acabar
-        coord1 = [ int(x) for x in wallInput[-2:] ]
-        lst = [coord1]
-        # key = wallInput[:-2]
-        switch (wallInput[-1]):
-            case "r":
-                lst += [[coord1[0]+1, coord[1]]]
-                break
-            case "l":
-                lst += [[coord1[0]-1, coord[1]]]
-                break
-            case "u":
-                lst += [[coord1[0], coord[1]-1]]
-                break
-            case "d":
-                lst += [[coord1[0], coord[1]+1]]
-                break
+        # if case == "r":
+        #     lst += [nextPo]
+        # elif case == "l":
+        #     lst += [nextPosition(coord, l)]
+        # elif case == "u":
+        #     lst += [[coord[0], coord[1]-1]]
+        # elif case == "d":
+        #     lst += [[coord[0], coord[1]+1]]
+        # else:
+        #     print("Erro\n")
+                
+        # self.walls += [lst]
+        self.walls += [lst]
+    
+
+    def nextPosition(self, coord, direction):
+        # print(coord, direction)
+        newCoord = ()
+        if direction == "r":
+            newCoord = (coord[0], coord[1] + 1)
+        elif direction == "l":
+            newCoord = (coord[0], coord[1] - 1)
+        elif direction == "u":
+            newCoord = (coord[0] - 1, coord[1])
+        elif direction == "d":
+            newCoord = (coord[0] + 1, coord[1])
+        
+        if self.canMove(coord, newCoord):
+            return newCoord
+        return coord
+
+
+    def canMove(self, coord1, coord2):
+        if (self.n + 1 in coord2) or (0 in coord2) :
+            return False
+        for lst in self.walls:
+            if coord1 in lst and coord2 in lst:
+                return False
+        for key in self.robots:
+            if self.robots[key] == coord2:
+                return False
+        return True
+            
         
 def parse_instance(filename: str) -> Board:
     """ Lê o ficheiro cujo caminho é passado como argumento e retorna
     uma instância da classe Board. """
     # TODO
-    inputFile = open(filename, 'r')
-    n = inputFile.readLine()
-    board = Board(n)
+    fileInput = []
+    # i = 1 
+    with open(filename) as f:
+        fileInput = [line.rstrip('\n') for line in f]
+    
+    board = Board(int(fileInput[0]))
 
     """ Coordenadas dos Robots  """
-    for i in range(4):
-        robot = inputFile.readLine().split()
+    for i in range(1, 5):
+        robot = fileInput[i].split()
         board.addRobot(robot)
 
     """ Alvo """
-    goal = inputFile.readLine().split()
+    goal = fileInput[5].split()
     board.addGoal(goal)
-    
-    """ Paredes """
-    n = inputFile.readLine()
-    for i in range(n):
-        wall = inputFile.readLine().split()
+
+    """ Paredes """ 
+    n = int(fileInput[6])
+    for i in range(7, 7 + n):
+        wall = fileInput[i].split()
         board.addWall(wall)
-        
+    
+    return board
+
 
 class RicochetRobots(Problem):
     def __init__(self, board: Board):
         """ O construtor especifica o estado inicial. """
-        # TODO: self.initial = ...
-        pass
+        self.board = board
 
     def actions(self, state: RRState):
         """ Retorna uma lista de ações que podem ser executadas a
@@ -110,14 +143,27 @@ class RicochetRobots(Problem):
         das presentes na lista obtida pela execução de
         self.actions(state). """
         # TODO
-        pass
+        # pass
+        self.board = state.board
+        nextCoord = ()
+        while True:
+            # print("dentro do while")
+            coord = self.board.robots[action[0]]
+            nextCoord = self.board.nextPosition(coord, action[1])
+            self.board.robots[action[0]] = nextCoord
+            if coord == nextCoord:
+                # print("dentro do  if do while")
+                break
+        return self
 
     def goal_test(self, state: RRState):
         """ Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se o alvo e o robô da
         mesma cor ocupam a mesma célula no tabuleiro. """
-        # TODO
-        pass
+        for key in self.board.goal:
+            if self.board.robots[key] == self.board.goal[key]:
+                return True
+        return False
 
     def h(self, node: Node):
         """ Função heuristica utilizada para a procura A*. """
@@ -132,3 +178,6 @@ if __name__ == "__main__":
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
     pass
+
+
+# parse_instance("i1.txt")
