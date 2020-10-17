@@ -134,26 +134,34 @@ class RicochetRobots(Problem):
     def actions(self, state: RRState):
         """ Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento. """
-        # TODO
-        pass
-
+        # self.board = state.board
+        actions = []
+        directions = ('r', 'l', 'd', 'u')
+        nextCoord = ()
+        for robot in state.board.robots:
+            for direction in directions:
+                action = (robot, direction)
+                coord = state.board.robots[robot]
+                nextCoord = state.board.nextPosition(coord, action)
+                if coord != nextCoord:
+                    actions += action
+        return actions
+                
+                        
     def result(self, state: RRState, action):
         """ Retorna o estado resultante de executar a 'action' sobre
         'state' passado como argumento. A ação retornada deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state). """
-        # TODO
-        # pass
         self.board = state.board
-        nextCoord = ()
-        while True:
-            # print("dentro do while")
-            coord = self.board.robots[action[0]]
-            nextCoord = self.board.nextPosition(coord, action[1])
-            self.board.robots[action[0]] = nextCoord
-            if coord == nextCoord:
-                # print("dentro do  if do while")
-                break
+        actions = self.actions(state)
+        if action in actions:
+            while True:
+                coord = self.board.robots[action[0]]
+                nextCoord = self.board.nextPosition(coord, action[1])
+                self.board.robots[action[0]] = nextCoord
+                if coord == nextCoord:
+                    break
         return self
 
     def goal_test(self, state: RRState):
