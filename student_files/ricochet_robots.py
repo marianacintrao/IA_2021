@@ -28,8 +28,6 @@ class RRState:
 class Board:
     """ Representacao interna de um tabuleiro de Ricochet Robots. """
 
-
-
     def __init__(self, n):
         self.n = n
         self.robots = {}
@@ -52,24 +50,9 @@ class Board:
         lst = [coord]
         direction = wallInput[-1]
         lst += [self.nextPosition(coord, direction)]
-
-        # if case == "r":
-        #     lst += [nextPo]
-        # elif case == "l":
-        #     lst += [nextPosition(coord, l)]
-        # elif case == "u":
-        #     lst += [[coord[0], coord[1]-1]]
-        # elif case == "d":
-        #     lst += [[coord[0], coord[1]+1]]
-        # else:
-        #     print("Erro\n")
-                
-        # self.walls += [lst]
         self.walls += [lst]
     
-
     def nextPosition(self, coord, direction):
-        # print(coord, direction)
         newCoord = ()
         if direction == "r":
             newCoord = (coord[0], coord[1] + 1)
@@ -95,8 +78,8 @@ class Board:
             if self.robots[key] == coord2:
                 return False
         return True
-            
-        
+
+
 def parse_instance(filename: str) -> Board:
     """ Lê o ficheiro cujo caminho é passado como argumento e retorna
     uma instância da classe Board. """
@@ -129,12 +112,12 @@ def parse_instance(filename: str) -> Board:
 class RicochetRobots(Problem):
     def __init__(self, board: Board):
         """ O construtor especifica o estado inicial. """
-        self.board = board
+        self.initial = RRState(board)
+        
 
     def actions(self, state: RRState):
         """ Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento. """
-        # self.board = state.board
         actions = []
         directions = ('r', 'l', 'd', 'u')
         nextCoord = ()
@@ -144,7 +127,7 @@ class RicochetRobots(Problem):
                 coord = state.board.robots[robot]
                 nextCoord = state.board.nextPosition(coord, action)
                 if coord != nextCoord:
-                    actions += action
+                    actions += (action,)
         return actions
                 
                         
@@ -168,24 +151,39 @@ class RicochetRobots(Problem):
         """ Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se o alvo e o robô da
         mesma cor ocupam a mesma célula no tabuleiro. """
-        for key in self.board.goal:
-            if self.board.robots[key] == self.board.goal[key]:
+        for key in self.initial.board.goal:
+            if self.initial.board.robots[key] == self.initial.board.goal[key]:
                 return True
         return False
 
     def h(self, node: Node):
         """ Função heuristica utilizada para a procura A*. """
-        # TODO
-        pass
+        return 1
+        
 
 
 if __name__ == "__main__":
     # TODO:
     # Ler o ficheiro de input de sys.argv[1],
     # Usar uma técnica de procura para resolver a instância,
-    # Retirar a solução a partir do nó resultante,
+    # Retirar astara solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
-    pass
+
+    board = parse_instance(sys.argv[1])
+
+    # Criar uma instância de RicochetRobots:
+    problem = RicochetRobots(board)
+
+    print(problem.initial.board.robots)
+
+    # Obter o nó solução usando a procura A*:
+    solution_node = astar_search(problem)
+
+    # action_list = solution_node.solution()
+
+    
 
 
-# parse_instance("i1.txt")
+
+
+

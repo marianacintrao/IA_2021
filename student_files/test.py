@@ -43,7 +43,6 @@ def test3():
     # Criar um estado com a configuração inicial:
     s0 = RRState(board)
 
-
     # Aplicar as ações que resolvem a instância
     s1 = problem.result(s0, ('B', 'l'))
     print(s1.board.robot_position('B'))
@@ -61,7 +60,7 @@ def test3():
 
 def test4():
     # Ler tabuleiro do ficheiro "i1.txt":
-    board = parse_instance("i1.txt")
+    board = parse_instance("i2.txt")
 
     # Criar uma instância de RicochetRobots:
     problem = RicochetRobots(board)
