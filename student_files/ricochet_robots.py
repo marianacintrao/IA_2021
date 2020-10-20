@@ -51,8 +51,12 @@ class Board:
         direction = wallInput[-1]
         lst += [self.nextPosition(coord, direction)]
         self.walls += [lst]
+
+
+        
     
-    def nextPosition(self, coord, direction):
+    
+    def nextPosition(self, coord, direction, wall = None):
         newCoord = ()
         if direction == "r":
             newCoord = (coord[0], coord[1] + 1)
@@ -61,14 +65,11 @@ class Board:
         elif direction == "u":
             newCoord = (coord[0] - 1, coord[1])
         elif direction == "d":
-            newCoord = (coord[0] + 1, coord[1])
-        
-        if self.canMove(coord, newCoord):
-            return newCoord
-        return coord
+            newCoord = (coord[0] + 1, coord[1])      
+        return newCoord
 
 
-    def canMove(self, coord1, coord2):
+    def canMove(self, coord1, coord2): 
         if (self.n + 1 in coord2) or (0 in coord2) :
             return False
         for lst in self.walls:
@@ -127,7 +128,7 @@ class RicochetRobots(Problem):
                 action = (robot, direction)
                 coord = s.board.robots[robot]
                 nextCoord = s.board.nextPosition(coord, direction)
-                if coord != nextCoord:
+                if s.board.canMove(coord, nextCoord):
                     actions += (action,)
         return actions
                 
@@ -143,9 +144,9 @@ class RicochetRobots(Problem):
             while True:
                 coord = s.board.robots[action[0]]
                 nextCoord = s.board.nextPosition(coord, action[1])
-                s.board.robots[action[0]] = nextCoord
-                if coord == nextCoord:
+                if not s.board.canMove(coord, nextCoord):
                     break
+                s.board.robots[action[0]] = nextCoord
         return s
 
 
@@ -158,7 +159,7 @@ class RicochetRobots(Problem):
         um estado objetivo. Deve verificar se o alvo e o robô da
         mesma cor ocupam a mesma célula no tabuleiro. """
         for key in self.initial.board.goal:
-            if self.initial.board.robots[key] == self.initial.board.goal[key]:
+            if self.initial.board.robots[key] == state.board.goal[key]:
                 return True
         return False
 
@@ -179,6 +180,7 @@ if __name__ == "__main__":
 
     # Criar uma instância de RicochetRobots:
     problem = RicochetRobots(board)
+    print(problem.initial.board.walls)
 
     # print(problem.initial.board.robots)
     # initial_state = RRState(board)
@@ -193,8 +195,10 @@ if __name__ == "__main__":
         # action_list = solution_node.solution()
         # print(action_list)
         # print(solution_node.state.board.robots)
-        if (solution_node.parent):
+        if solution_node.parent and problem.goal_test(solution_node.state):
             print("YES!")
+        else:
+            print(":((((((((")
         while (solution_node.parent):
             print(solution_node.action)
             solution_node = solution_node.parent
