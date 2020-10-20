@@ -2,9 +2,9 @@
 # Devem alterar as classes e funções neste ficheiro de acordo com as instruções do enunciado.
 # Além das funções e classes já definidas, podem acrescentar outras que considerem pertinentes.
 
-# Grupo 00:
-# 00000 Nome1
-# 00000 Nome2
+# Grupo 98:
+# 92510 Lúcia Silva
+# 93737 Mariana Cintrão
 
 from search import Problem, Node, astar_search, breadth_first_tree_search, \
     depth_first_tree_search, greedy_search
@@ -118,14 +118,15 @@ class RicochetRobots(Problem):
     def actions(self, state: RRState):
         """ Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento. """
+        s = RRState(state.board)
         actions = []
         directions = ('r', 'l', 'd', 'u')
         nextCoord = ()
-        for robot in state.board.robots:
+        for robot in s.board.robots:
             for direction in directions:
                 action = (robot, direction)
-                coord = state.board.robots[robot]
-                nextCoord = state.board.nextPosition(coord, action)
+                coord = s.board.robots[robot]
+                nextCoord = s.board.nextPosition(coord, direction)
                 if coord != nextCoord:
                     actions += (action,)
         return actions
@@ -136,17 +137,22 @@ class RicochetRobots(Problem):
         'state' passado como argumento. A ação retornada deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state). """
-        self.board = state.board
+        s = RRState(state.board)
         actions = self.actions(state)
         if action in actions:
             while True:
-                coord = self.board.robots[action[0]]
-                nextCoord = self.board.nextPosition(coord, action[1])
-                self.board.robots[action[0]] = nextCoord
+                coord = s.board.robots[action[0]]
+                nextCoord = s.board.nextPosition(coord, action[1])
+                s.board.robots[action[0]] = nextCoord
                 if coord == nextCoord:
                     break
-        return self
+        return s
 
+
+    # def path_cost(self, c, state1, action, state2):
+    #     return Problem.path_cost(self, c, state1, action, state2)
+    
+    
     def goal_test(self, state: RRState):
         """ Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se o alvo e o robô da
@@ -174,13 +180,24 @@ if __name__ == "__main__":
     # Criar uma instância de RicochetRobots:
     problem = RicochetRobots(board)
 
-    print(problem.initial.board.robots)
+    # print(problem.initial.board.robots)
+    # initial_state = RRState(board)
+    # initial_node = Node(initial_state)
 
     # Obter o nó solução usando a procura A*:
-    solution_node = astar_search(problem)
+    # solution_node = astar_search(problem, problem.h(initial_node))
+    solution_node = astar_search(problem, problem.h)
 
-    # action_list = solution_node.solution()
-
+    if (solution_node):
+        # print("solution node existe!")
+        # action_list = solution_node.solution()
+        # print(action_list)
+        # print(solution_node.state.board.robots)
+        if (solution_node.parent):
+            print("YES!")
+        while (solution_node.parent):
+            print(solution_node.action)
+            solution_node = solution_node.parent
     
 
 

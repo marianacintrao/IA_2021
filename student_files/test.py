@@ -67,7 +67,7 @@ def test4():
 
     # Obter o nó solução usando a procura A*:
     solution_node = astar_search(problem)
-
+    
     print("done.")
 
 if __name__ == "__main__":

@@ -93,12 +93,14 @@ class Node:
 
     def expand(self, problem):
         """List the nodes reachable in one step from this node."""
+        print(problem.actions(self.state))
         return [self.child_node(problem, action)
                 for action in problem.actions(self.state)]
 
     def child_node(self, problem, action):
         """[Figure 3.10]"""
         next_state = problem.result(self.state, action)
+        # print(self.state.board.robots, next_state.board.robots, action)
         next_node = Node(next_state, self, action, problem.path_cost(self.path_cost, self.state, action, next_state))
         return next_node
 
@@ -128,7 +130,6 @@ class Node:
         # object itself to quickly search a node
         # with the same state in a Hash Table
         return hash(self.state)
-
 
 # ______________________________________________________________________________
 
@@ -270,18 +271,24 @@ def best_first_graph_search(problem, f, display=False):
     frontier = PriorityQueue('min', f)
     frontier.append(node)
     explored = set()
+    # print("1:")
+    #print(problem.initial.board.robots)
     while frontier:
+        print("2:")
         node = frontier.pop()
         if problem.goal_test(node.state):
             if display:
                 print(len(explored), "paths have been expanded and", len(frontier), "paths remain in the frontier")
             return node
         explored.add(node.state)
+        print("3:")
         for child in node.expand(problem):
             if child.state not in explored and child not in frontier:
+                print("4:")
                 frontier.append(child)
             elif child in frontier:
                 if f(child) < frontier[child]:
+                    print("5:")
                     del frontier[child]
                     frontier.append(child)
     return None
