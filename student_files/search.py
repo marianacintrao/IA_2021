@@ -93,7 +93,7 @@ class Node:
 
     def expand(self, problem):
         """List the nodes reachable in one step from this node."""
-        print(problem.actions(self.state))
+        # print(problem.actions(self.state))
         return [self.child_node(problem, action)
                 for action in problem.actions(self.state)]
 
@@ -282,10 +282,10 @@ def best_first_graph_search(problem, f, display=False):
             if display:
                 print(len(explored), "paths have been expanded and", len(frontier), "paths remain in the frontier")
             return node
-        print(node.action)
+        # print(node.action)
         explored.add(node.state)
         for child in node.expand(problem):
-            print("3:")
+            # print("3:")
             if child.state not in explored and child not in frontier:
                 # print("4:")
                 frontier.append(child)

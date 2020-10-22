@@ -110,7 +110,7 @@ def parse_instance(filename: str) -> Board:
         wall = fileInput[i].split()
         board.addWall(wall)
     
-    return board
+    return board    
 
 
 class RicochetRobots(Problem):
@@ -142,33 +142,34 @@ class RicochetRobots(Problem):
         'state' passado como argumento. A ação retornada deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state). """
-        #s = RRState(state.board)
-        print("action: ", action)
+        #s = RRState(state.board)   
+        # print("action: ", action)
         s = RRState(state.board.copyBoard())
-        actions = self.actions(state)
-        if action in actions:
-            while True:
-                coord = s.board.robots[action[0]]
-                nextCoord = s.board.nextPosition(coord, action[1])
-                if not s.board.canMove(coord, nextCoord):
-                    break
-                s.board.robots[action[0]] = nextCoord
+        # actions = self.actions(state)
+        # if action in actions:
+        while True:
+            coord = s.board.robots[action[0]]
+            nextCoord = s.board.nextPosition(coord, action[1])
+            if not s.board.canMove(coord, nextCoord):
+                break
+            s.board.robots[action[0]] = nextCoord
         # print("initial", self.initial.board.robots)
         # print("board  ", s.board.robots)
+        # print("result:", s.board.robots)
         return s
 
-
-    # def path_cost(self, c, state1, action, state2):
-    #     return Problem.path_cost(self, c, state1, action, state2)
-    
+  
     
     def goal_test(self, state: RRState):
         """ Retorna True se e só se o estado passado como argumento é
+        
         um estado objetivo. Deve verificar se o alvo e o robô da
         mesma cor ocupam a mesma célula no tabuleiro. """
         for key in self.initial.board.goal:
-            print("initial goal key:",key,". goal coord:",self.initial.board.robots[key], ". robot coord:" , state.board.goal[key])
-            if self.initial.board.robots[key] == state.board.goal[key]:
+            # print("initial goal key:",key,". goal coord:", self.initial.board.goal[key], ". robot coord:" , state.board.robots[key])
+            if self.initial.board.goal[key] == state.board.robots[key]:
+                # print("igual")
+                # exit()
                 return True
         return False
 
@@ -184,6 +185,8 @@ class RicochetRobots(Problem):
             goalCoord = board.goal[key]
         robotCoord = board.robots[goalColor]   
         distance = abs(goalCoord[0] - robotCoord[0]) + abs(goalCoord[1] - robotCoord[1])
+        if goalCoord[0] == robotCoord[0] or goalCoord[1] == robotCoord[1]:
+            distance = distance - 1
         return distance 
         
 
@@ -199,29 +202,19 @@ if __name__ == "__main__":
 
     # Criar uma instância de RicochetRobots:
     problem = RicochetRobots(board)
-    print(problem.initial.board.walls)
-
-    # print(problem.initial.board.robots)
-    # initial_state = RRState(board)
-    # initial_node = Node(initial_state)
 
     # Obter o nó solução usando a procura A*:
-    # solution_node = astar_search(problem, problem.h(initial_node))
     solution_node = astar_search(problem, problem.h)
 
+    string = ""
+    actions = 0
     if (solution_node):
-        # print("solution node existe!")
-        # action_list = solution_node.solution()
-        # print(action_list)
-        # print(solution_node.state.board.robots)
-        if solution_node.parent and problem.goal_test(solution_node.state):
-            print("YES!")
-        else:
-            print(":((((((((")
         while (solution_node.parent):
-            print(solution_node.action)
+            string = solution_node.action[0] + " " + solution_node.action[1] + '\n' + string
             solution_node = solution_node.parent
-    
+            actions += 1
+    string = str(actions) + '\n' + string[:-1]
+    print(string)
 
 
 
