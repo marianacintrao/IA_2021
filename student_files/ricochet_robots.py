@@ -165,7 +165,16 @@ class RicochetRobots(Problem):
 
     def h(self, node: Node):
         """ Função heuristica utilizada para a procura A*. """
-        return 1
+        state = node.state
+        goalCoord = ()
+        goalColor = ""
+        robotCoord = ()
+        for key in state.goal:
+            goalColor = key
+            goalCoord = state.goal[key]
+        robotCoord = state.robots[goalColor]   
+        distance = abs(goalCoor[0] - robotCoord[0]) + abs(goalCoor[1] - robotCoord[1])
+        return distance
         
 
 
