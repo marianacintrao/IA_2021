@@ -100,7 +100,9 @@ class Node:
     def child_node(self, problem, action):
         """[Figure 3.10]"""
         next_state = problem.result(self.state, action)
-        # print(self.state.board.robots, next_state.board.robots, action)
+        # print("state.board: ", self.state.board.robots)
+        # print("new state.board: ", next_state.board.robots)
+        #print(self.state.board.robots, next_state.board.robots, action)
         next_node = Node(next_state, self, action, problem.path_cost(self.path_cost, self.state, action, next_state))
         return next_node
 
@@ -274,7 +276,7 @@ def best_first_graph_search(problem, f, display=False):
     # print("1:")
     #print(problem.initial.board.robots)
     while frontier:
-        print("2:")
+        # print("2:")
         node = frontier.pop()
         if problem.goal_test(node.state):
             if display:
@@ -282,16 +284,17 @@ def best_first_graph_search(problem, f, display=False):
             return node
         print(node.action)
         explored.add(node.state)
-        print("3:")
         for child in node.expand(problem):
+            print("3:")
             if child.state not in explored and child not in frontier:
-                print("4:")
+                # print("4:")
                 frontier.append(child)
             elif child in frontier:
                 if f(child) < frontier[child]:
-                    print("5:")
+                    # print("5:")
                     del frontier[child]
                     frontier.append(child)
+        # print(node.action)
     return None
 
 

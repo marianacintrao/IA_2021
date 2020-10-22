@@ -8,7 +8,7 @@
 
 from search import Problem, Node, astar_search, breadth_first_tree_search, \
     depth_first_tree_search, greedy_search
-import sys
+import sys, copy
 
 
 class RRState:
@@ -51,10 +51,6 @@ class Board:
         direction = wallInput[-1]
         lst += [self.nextPosition(coord, direction)]
         self.walls += [lst]
-
-
-        
-    
     
     def nextPosition(self, coord, direction, wall = None):
         newCoord = ()
@@ -79,6 +75,13 @@ class Board:
             if self.robots[key] == coord2:
                 return False
         return True
+
+    def copyBoard(self):
+        newBoard = Board(self.n)
+        newBoard.robots = copy.deepcopy(self.robots)
+        newBoard.walls = copy.deepcopy(self.walls)
+        newBoard.goal = copy.deepcopy(self.goal)
+        return newBoard
 
 
 def parse_instance(filename: str) -> Board:
@@ -113,13 +116,14 @@ def parse_instance(filename: str) -> Board:
 class RicochetRobots(Problem):
     def __init__(self, board: Board):
         """ O construtor especifica o estado inicial. """
-        self.initial = RRState(board)
+        self.initial = RRState(board.copyBoard())
         
 
     def actions(self, state: RRState):
         """ Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento. """
-        s = RRState(state.board)
+        #s = RRState(state.board)
+        s = RRState(state.board.copyBoard())
         actions = []
         directions = ('r', 'l', 'd', 'u')
         nextCoord = ()
@@ -138,7 +142,9 @@ class RicochetRobots(Problem):
         'state' passado como argumento. A ação retornada deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state). """
-        s = RRState(state.board)
+        #s = RRState(state.board)
+        print("action: ", action)
+        s = RRState(state.board.copyBoard())
         actions = self.actions(state)
         if action in actions:
             while True:
@@ -147,6 +153,8 @@ class RicochetRobots(Problem):
                 if not s.board.canMove(coord, nextCoord):
                     break
                 s.board.robots[action[0]] = nextCoord
+        # print("initial", self.initial.board.robots)
+        # print("board  ", s.board.robots)
         return s
 
 
@@ -159,22 +167,24 @@ class RicochetRobots(Problem):
         um estado objetivo. Deve verificar se o alvo e o robô da
         mesma cor ocupam a mesma célula no tabuleiro. """
         for key in self.initial.board.goal:
+            print("initial goal key:",key,". goal coord:",self.initial.board.robots[key], ". robot coord:" , state.board.goal[key])
             if self.initial.board.robots[key] == state.board.goal[key]:
                 return True
         return False
 
     def h(self, node: Node):
         """ Função heuristica utilizada para a procura A*. """
-        state = node.state
+        #board = node.state.board.copyBoard()
+        board = node.state.board
         goalCoord = ()
         goalColor = ""
         robotCoord = ()
-        for key in state.goal:
+        for key in board.goal:
             goalColor = key
-            goalCoord = state.goal[key]
-        robotCoord = state.robots[goalColor]   
-        distance = abs(goalCoor[0] - robotCoord[0]) + abs(goalCoor[1] - robotCoord[1])
-        return distance
+            goalCoord = board.goal[key]
+        robotCoord = board.robots[goalColor]   
+        distance = abs(goalCoord[0] - robotCoord[0]) + abs(goalCoord[1] - robotCoord[1])
+        return distance 
         
 
 
