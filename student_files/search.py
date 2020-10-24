@@ -276,25 +276,25 @@ def best_first_graph_search(problem, f, display=False):
     # print("1:")
     #print(problem.initial.board.robots)
     while frontier:
-        # print("2:")
         node = frontier.pop()
+        # print("-----")
+        # print("state id:", node.state.state_id)
+        # if (node.parent):
+            # print("state id do pai:", node.parent.state.state_id)
+            # print("pai:", node.parent.state.board.robots)
+            # print("ação:", node.action)
         if problem.goal_test(node.state):
             if display:
                 print(len(explored), "paths have been expanded and", len(frontier), "paths remain in the frontier")
             return node
-        # print(node.action)
         explored.add(node.state)
         for child in node.expand(problem):
-            # print("3:")
             if child.state not in explored and child not in frontier:
-                # print("4:")
                 frontier.append(child)
             elif child in frontier:
                 if f(child) < frontier[child]:
-                    # print("5:")
                     del frontier[child]
                     frontier.append(child)
-        # print(node.action)
     return None
 
 
@@ -431,6 +431,7 @@ def astar_search(problem, h=None, display=False):
     You need to specify the h function when you call astar_search, or
     else in your Problem subclass."""
     h = memoize(h or problem.h, 'h')
+    # print(lambda n:n.path_cost + h(n), "-------------")
     return best_first_graph_search(problem, lambda n: n.path_cost + h(n), display)
 
 

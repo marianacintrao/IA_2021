@@ -11,6 +11,7 @@ from search import Problem, Node, astar_search, breadth_first_tree_search, \
 import sys, copy
 
 
+
 class RRState:
     state_id = 0
 
@@ -24,6 +25,19 @@ class RRState:
         de abertos nas procuras informadas. """
         return self.id < other.id
 
+    def __eq__(self, other):
+        if not self.board.walls == other.board.walls:
+            return False
+        for key in self.board.robots:
+            if not self.board.robots[key] == other.board.robots[key]:
+                return False
+        for key in self.board.goal:
+            if not self.board.goal[key] == other.board.goal[key]:
+                return False
+        return True
+
+    def __hash__(self):
+        return self.state_id
 
 class Board:
     """ Representacao interna de um tabuleiro de Ricochet Robots. """
@@ -37,7 +51,7 @@ class Board:
     def robot_position(self, robot: str):
         """ Devolve a posição atual do robô passado como argumento. """
         return self.robots[robot]
-
+    
 
     def addRobot(self, robotInput):
         self.robots[robotInput[0]] = (int(robotInput[1]), int(robotInput[2]))
@@ -78,18 +92,16 @@ class Board:
 
     def copyBoard(self):
         newBoard = Board(self.n)
-        newBoard.robots = copy.deepcopy(self.robots)
-        newBoard.walls = copy.deepcopy(self.walls)
-        newBoard.goal = copy.deepcopy(self.goal)
+        newBoard.robots = self.robots.copy()
+        newBoard.walls = self.walls
+        newBoard.goal = self.goal
         return newBoard
-
 
 def parse_instance(filename: str) -> Board:
     """ Lê o ficheiro cujo caminho é passado como argumento e retorna
     uma instância da classe Board. """
     # TODO
     fileInput = []
-    # i = 1 
     with open(filename) as f:
         fileInput = [line.rstrip('\n') for line in f]
     
@@ -142,61 +154,91 @@ class RicochetRobots(Problem):
         'state' passado como argumento. A ação retornada deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state). """
-        #s = RRState(state.board)   
-        # print("action: ", action)
         s = RRState(state.board.copyBoard())
-        # actions = self.actions(state)
-        # if action in actions:
         while True:
             coord = s.board.robots[action[0]]
             nextCoord = s.board.nextPosition(coord, action[1])
             if not s.board.canMove(coord, nextCoord):
                 break
             s.board.robots[action[0]] = nextCoord
-        # print("initial", self.initial.board.robots)
-        # print("board  ", s.board.robots)
-        # print("result:", s.board.robots)
         return s
 
   
     
     def goal_test(self, state: RRState):
         """ Retorna True se e só se o estado passado como argumento é
-        
         um estado objetivo. Deve verificar se o alvo e o robô da
         mesma cor ocupam a mesma célula no tabuleiro. """
         for key in self.initial.board.goal:
-            # print("initial goal key:",key,". goal coord:", self.initial.board.goal[key], ". robot coord:" , state.board.robots[key])
             if self.initial.board.goal[key] == state.board.robots[key]:
-                # print("igual")
-                # exit()
                 return True
         return False
 
     def h(self, node: Node):
         """ Função heuristica utilizada para a procura A*. """
-        #board = node.state.board.copyBoard()
         board = node.state.board
-        goalCoord = ()
         goalColor = ""
+        goalCoord = ()
         robotCoord = ()
         for key in board.goal:
             goalColor = key
             goalCoord = board.goal[key]
-        robotCoord = board.robots[goalColor]   
+        goalRobot = goalColor
+        robotCoord = board.robots[goalRobot]   
         distance = abs(goalCoord[0] - robotCoord[0]) + abs(goalCoord[1] - robotCoord[1])
-        if goalCoord[0] == robotCoord[0] or goalCoord[1] == robotCoord[1]:
-            distance = distance - 1
-        return distance 
-        
+        # if goalCoord[0] == robotCoord[0] or goalCoord[1] == robotCoord[1]:
+        #     #if robot is in the same line or column as the goal
+        #     distance = distance - 1
 
+        # if (board.ComparePos(goalColor)):
+        #     distance = distance / 2     
+        
+        #if node.path_cost > 20:
+        # print("--------- path cost ------- ", node.path_cost)
+        
+        # if node.state.state_id > 5000:
+            # exit()
+        
+        if goalCoord[0] == robotCoord[0]:
+            mn = min(board.goal[goalColor][1], board.robot_position(goalRobot)[1])
+            mx = max(board.goal[goalColor][1], board.robot_position(goalRobot)[1]) + 1
+            
+            for otherRobot in board.robots:
+                if otherRobot != goalRobot:
+                    if mn < board.robot_position(otherRobot)[1] < mx:
+                        return distance
+            for wall in board.walls:
+                if wall[0][0] == goalCoord[0] == wall[1][0]:
+                    if wall[0][1] >= mn and wall[1][1] <= mx:
+                        return distance
+            # print("1!", distsance)
+            distance -= 1
+
+            
+        elif goalCoord[1] == robotCoord[1]:
+            mn = min(board.goal[goalColor][0], board.robot_position(goalRobot)[0])
+            mx = max(board.goal[goalColor][0], board.robot_position(goalRobot)[0]) + 1
+            
+            for otherRobot in board.robots:
+                if otherRobot != goalRobot:
+                    if mn < board.robot_position(otherRobot)[0] < mx:
+                        return distance
+            for wall in board.walls:
+                if wall[0][1] == goalCoord[1] == wall[1][1]:
+                    if wall[0][0] >= mn and wall[1][0] <= mx:
+                        return distance
+            # print("2!",distance)
+            distance -=1
+
+
+        return distance
+                                
 
 if __name__ == "__main__":
-    # TODO:
-    # Ler o ficheiro de input de sys.argv[1],
-    # Usar uma técnica de procura para resolver a instância,
-    # Retirar astara solução a partir do nó resultante,
-    # Imprimir para o standard output no formato indicado.
+    """ Ler o ficheiro de input de sys.argv[1],
+    Usar uma técnica de procura para resolver a instância,
+    Retirar astara solução a partir do nó resultante,
+    Imprimir para o standard output no formato indicado. """
 
     board = parse_instance(sys.argv[1])
 
