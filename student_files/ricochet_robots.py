@@ -10,8 +10,6 @@ from search import Problem, Node, astar_search, breadth_first_tree_search, \
     depth_first_tree_search, greedy_search
 import sys, copy
 
-
-
 class RRState:
     state_id = 0
 
@@ -100,7 +98,6 @@ class Board:
 def parse_instance(filename: str) -> Board:
     """ Lê o ficheiro cujo caminho é passado como argumento e retorna
     uma instância da classe Board. """
-    # TODO
     fileInput = []
     with open(filename) as f:
         fileInput = [line.rstrip('\n') for line in f]
@@ -162,8 +159,6 @@ class RicochetRobots(Problem):
                 break
             s.board.robots[action[0]] = nextCoord
         return s
-
-  
     
     def goal_test(self, state: RRState):
         """ Retorna True se e só se o estado passado como argumento é
@@ -177,13 +172,12 @@ class RicochetRobots(Problem):
     def h(self, node: Node):
         """ Função heuristica utilizada para a procura A*. """
         board = node.state.board
-        goalColor = ""
+        # goalColor = ""
         goalCoord = ()
         robotCoord = ()
         for key in board.goal:
             goalColor = key
             goalCoord = board.goal[key]
-        goalRobot = goalColor
 
         allDistances = 0
 
@@ -192,55 +186,7 @@ class RicochetRobots(Problem):
 
             robotCoord = board.robots[robot]   
             allDistances += abs(goalCoord[0] - robotCoord[0]) + abs(goalCoord[1] - robotCoord[1])
-            # # if goalCoord[0] == robotCoord[0] or goalCoord[1] == robotCoord[1]:
-            # #     #if robot is in the same line or column as the goal
-            # #     distance = distance - 1
 
-            # # if (board.ComparePos(goalColor)):
-            # #     distance = distance / 2     
-            
-            # #if node.path_cost > 20:
-            # # print("--------- path cost ------- ", node.path_cost)
-            
-            # # if node.state.state_id > 5000:
-            #     # exit()
-            
-            # if goalCoord[0] == robotCoord[0]:
-            #     mn = min(board.goal[goalColor][1], board.robot_position(robot)[1])
-            #     mx = max(board.goal[goalColor][1], board.robot_position(robot)[1]) + 1
-                
-            #     for otherRobot in board.robots:
-            #         if otherRobot != robotCoord:
-            #             if mn < board.robot_position(otherRobot)[1] < mx:
-            #                 allDistances += distance
-            #                 print("1:")
-            #                 break
-            #     for wall in board.walls:
-            #         if wall[0][0] == goalCoord[0] == wall[1][0]:
-            #             if wall[0][1] >= mn and wall[1][1] <= mx:
-            #                 allDistances += distance
-            #                 break
-            #     # print("1!", distsance)
-            #     allDistances -= distance 
-
-                
-            # elif goalCoord[1] == robotCoord[1]:
-            #     mn = min(board.goal[goalColor][0], board.robot_position(robot)[0])
-            #     mx = max(board.goal[goalColor][0], board.robot_position(robot)[0]) + 1
-                
-            #     for otherRobot in board.robots:
-            #         if otherRobot != robotCoord:
-            #             if mn < board.robot_position(otherRobot)[0] < mx:
-            #                 allDistances += distance
-            #                 print("2:")
-            #                 break
-            #     for wall in board.walls:
-            #         if wall[0][1] == goalCoord[1] == wall[1][1]:
-            #             if wall[0][0] >= mn and wall[1][0] <= mx:
-            #                 distance +=distance
-            #                 break
-            #     # print("2!",distance)
-            #     allDistances -= distance
         return allDistances
                                 
 
@@ -250,6 +196,7 @@ if __name__ == "__main__":
     Retirar astara solução a partir do nó resultante,
     Imprimir para o standard output no formato indicado. """
 
+    # parse board input
     board = parse_instance(sys.argv[1])
 
     # Criar uma instância de RicochetRobots:
@@ -258,6 +205,7 @@ if __name__ == "__main__":
     # Obter o nó solução usando a procura A*:
     solution_node = astar_search(problem, problem.h)
 
+    # print and format solution
     string = ""
     actions = 0
     if (solution_node):
