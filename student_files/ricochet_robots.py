@@ -184,54 +184,64 @@ class RicochetRobots(Problem):
             goalColor = key
             goalCoord = board.goal[key]
         goalRobot = goalColor
-        robotCoord = board.robots[goalRobot]   
-        distance = abs(goalCoord[0] - robotCoord[0]) + abs(goalCoord[1] - robotCoord[1])
-        # if goalCoord[0] == robotCoord[0] or goalCoord[1] == robotCoord[1]:
-        #     #if robot is in the same line or column as the goal
-        #     distance = distance - 1
 
-        # if (board.ComparePos(goalColor)):
-        #     distance = distance / 2     
-        
-        #if node.path_cost > 20:
-        # print("--------- path cost ------- ", node.path_cost)
-        
-        # if node.state.state_id > 5000:
-            # exit()
-        
-        if goalCoord[0] == robotCoord[0]:
-            mn = min(board.goal[goalColor][1], board.robot_position(goalRobot)[1])
-            mx = max(board.goal[goalColor][1], board.robot_position(goalRobot)[1]) + 1
+        allDistances = 0
+
+
+        for robot in board.robots:
+
+            robotCoord = board.robots[robot]   
+            allDistances += abs(goalCoord[0] - robotCoord[0]) + abs(goalCoord[1] - robotCoord[1])
+            # # if goalCoord[0] == robotCoord[0] or goalCoord[1] == robotCoord[1]:
+            # #     #if robot is in the same line or column as the goal
+            # #     distance = distance - 1
+
+            # # if (board.ComparePos(goalColor)):
+            # #     distance = distance / 2     
             
-            for otherRobot in board.robots:
-                if otherRobot != goalRobot:
-                    if mn < board.robot_position(otherRobot)[1] < mx:
-                        return distance
-            for wall in board.walls:
-                if wall[0][0] == goalCoord[0] == wall[1][0]:
-                    if wall[0][1] >= mn and wall[1][1] <= mx:
-                        return distance
-            # print("1!", distsance)
-            distance -= 1
-
+            # #if node.path_cost > 20:
+            # # print("--------- path cost ------- ", node.path_cost)
             
-        elif goalCoord[1] == robotCoord[1]:
-            mn = min(board.goal[goalColor][0], board.robot_position(goalRobot)[0])
-            mx = max(board.goal[goalColor][0], board.robot_position(goalRobot)[0]) + 1
+            # # if node.state.state_id > 5000:
+            #     # exit()
             
-            for otherRobot in board.robots:
-                if otherRobot != goalRobot:
-                    if mn < board.robot_position(otherRobot)[0] < mx:
-                        return distance
-            for wall in board.walls:
-                if wall[0][1] == goalCoord[1] == wall[1][1]:
-                    if wall[0][0] >= mn and wall[1][0] <= mx:
-                        return distance
-            # print("2!",distance)
-            distance -=1
+            # if goalCoord[0] == robotCoord[0]:
+            #     mn = min(board.goal[goalColor][1], board.robot_position(robot)[1])
+            #     mx = max(board.goal[goalColor][1], board.robot_position(robot)[1]) + 1
+                
+            #     for otherRobot in board.robots:
+            #         if otherRobot != robotCoord:
+            #             if mn < board.robot_position(otherRobot)[1] < mx:
+            #                 allDistances += distance
+            #                 print("1:")
+            #                 break
+            #     for wall in board.walls:
+            #         if wall[0][0] == goalCoord[0] == wall[1][0]:
+            #             if wall[0][1] >= mn and wall[1][1] <= mx:
+            #                 allDistances += distance
+            #                 break
+            #     # print("1!", distsance)
+            #     allDistances -= distance 
 
-
-        return distance
+                
+            # elif goalCoord[1] == robotCoord[1]:
+            #     mn = min(board.goal[goalColor][0], board.robot_position(robot)[0])
+            #     mx = max(board.goal[goalColor][0], board.robot_position(robot)[0]) + 1
+                
+            #     for otherRobot in board.robots:
+            #         if otherRobot != robotCoord:
+            #             if mn < board.robot_position(otherRobot)[0] < mx:
+            #                 allDistances += distance
+            #                 print("2:")
+            #                 break
+            #     for wall in board.walls:
+            #         if wall[0][1] == goalCoord[1] == wall[1][1]:
+            #             if wall[0][0] >= mn and wall[1][0] <= mx:
+            #                 distance +=distance
+            #                 break
+            #     # print("2!",distance)
+            #     allDistances -= distance
+        return allDistances
                                 
 
 if __name__ == "__main__":
