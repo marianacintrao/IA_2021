@@ -5,6 +5,7 @@
 # Grupo 98:
 # 92510 Lúcia Silva
 # 93737 Mariana Cintrão
+#
 
 from search import Problem, Node, astar_search, breadth_first_tree_search, \
     depth_first_tree_search, greedy_search
@@ -24,13 +25,8 @@ class RRState:
         return self.id < other.id
 
     def __eq__(self, other):
-        if not self.board.walls == other.board.walls:
-            return False
         for key in self.board.robots:
             if not self.board.robots[key] == other.board.robots[key]:
-                return False
-        for key in self.board.goal:
-            if not self.board.goal[key] == other.board.goal[key]:
                 return False
         return True
 
@@ -131,7 +127,6 @@ class RicochetRobots(Problem):
     def actions(self, state: RRState):
         """ Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento. """
-        #s = RRState(state.board)
         s = RRState(state.board.copyBoard())
         actions = []
         directions = ('r', 'l', 'd', 'u')
@@ -172,11 +167,9 @@ class RicochetRobots(Problem):
     def h(self, node: Node):
         """ Função heuristica utilizada para a procura A*. """
         board = node.state.board
-        # goalColor = ""
         goalCoord = ()
         robotCoord = ()
         for key in board.goal:
-            goalColor = key
             goalCoord = board.goal[key]
 
         allDistances = 0
@@ -186,7 +179,7 @@ class RicochetRobots(Problem):
 
             robotCoord = board.robots[robot]   
             allDistances += abs(goalCoord[0] - robotCoord[0]) + abs(goalCoord[1] - robotCoord[1])
-
+        
         return allDistances
                                 
 
@@ -215,8 +208,4 @@ if __name__ == "__main__":
             actions += 1
     string = str(actions) + '\n' + string[:-1]
     print(string)
-
-
-
-
 
