@@ -1,0 +1,11 @@
+=== testing file: i1.txt ===
+
+--- start astar search ---
+4
+B l
+Y u
+R r
+R u
+--- 0.013535022735595703 seconds ---
+
+--- start greddy search ---

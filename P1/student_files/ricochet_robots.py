@@ -5,11 +5,11 @@
 # Grupo 98:
 # 92510 Lúcia Silva
 # 93737 Mariana Cintrão
+#
 
 from search import Problem, Node, astar_search, breadth_first_tree_search, \
     depth_first_tree_search, greedy_search
 import sys, copy
-
 
 class RRState:
     state_id = 0
@@ -24,6 +24,14 @@ class RRState:
         de abertos nas procuras informadas. """
         return self.id < other.id
 
+    def __eq__(self, other):
+        for key in self.board.robots:
+            if not self.board.robots[key] == other.board.robots[key]:
+                return False
+        return True
+
+    def __hash__(self):
+        return self.state_id
 
 class Board:
     """ Representacao interna de um tabuleiro de Ricochet Robots. """
@@ -37,7 +45,7 @@ class Board:
     def robot_position(self, robot: str):
         """ Devolve a posição atual do robô passado como argumento. """
         return self.robots[robot]
-
+    
 
     def addRobot(self, robotInput):
         self.robots[robotInput[0]] = (int(robotInput[1]), int(robotInput[2]))
@@ -78,18 +86,15 @@ class Board:
 
     def copyBoard(self):
         newBoard = Board(self.n)
-        newBoard.robots = copy.deepcopy(self.robots)
-        newBoard.walls = copy.deepcopy(self.walls)
-        newBoard.goal = copy.deepcopy(self.goal)
+        newBoard.robots = self.robots.copy()
+        newBoard.walls = self.walls
+        newBoard.goal = self.goal
         return newBoard
-
 
 def parse_instance(filename: str) -> Board:
     """ Lê o ficheiro cujo caminho é passado como argumento e retorna
     uma instância da classe Board. """
-    # TODO
     fileInput = []
-    # i = 1 
     with open(filename) as f:
         fileInput = [line.rstrip('\n') for line in f]
     
@@ -122,7 +127,6 @@ class RicochetRobots(Problem):
     def actions(self, state: RRState):
         """ Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento. """
-        #s = RRState(state.board)
         s = RRState(state.board.copyBoard())
         actions = []
         directions = ('r', 'l', 'd', 'u')
@@ -142,62 +146,50 @@ class RicochetRobots(Problem):
         'state' passado como argumento. A ação retornada deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state). """
-        #s = RRState(state.board)   
-        # print("action: ", action)
         s = RRState(state.board.copyBoard())
-        # actions = self.actions(state)
-        # if action in actions:
         while True:
             coord = s.board.robots[action[0]]
             nextCoord = s.board.nextPosition(coord, action[1])
             if not s.board.canMove(coord, nextCoord):
                 break
             s.board.robots[action[0]] = nextCoord
-        # print("initial", self.initial.board.robots)
-        # print("board  ", s.board.robots)
-        # print("result:", s.board.robots)
         return s
-
-  
     
     def goal_test(self, state: RRState):
         """ Retorna True se e só se o estado passado como argumento é
-        
         um estado objetivo. Deve verificar se o alvo e o robô da
         mesma cor ocupam a mesma célula no tabuleiro. """
         for key in self.initial.board.goal:
-            # print("initial goal key:",key,". goal coord:", self.initial.board.goal[key], ". robot coord:" , state.board.robots[key])
             if self.initial.board.goal[key] == state.board.robots[key]:
-                # print("igual")
-                # exit()
                 return True
         return False
 
     def h(self, node: Node):
         """ Função heuristica utilizada para a procura A*. """
-        #board = node.state.board.copyBoard()
         board = node.state.board
         goalCoord = ()
-        goalColor = ""
         robotCoord = ()
         for key in board.goal:
-            goalColor = key
             goalCoord = board.goal[key]
-        robotCoord = board.robots[goalColor]   
-        distance = abs(goalCoord[0] - robotCoord[0]) + abs(goalCoord[1] - robotCoord[1])
-        if goalCoord[0] == robotCoord[0] or goalCoord[1] == robotCoord[1]:
-            distance = distance - 1
-        return distance 
-        
 
+        allDistances = 0
+
+
+        for robot in board.robots:
+
+            robotCoord = board.robots[robot]   
+            allDistances += abs(goalCoord[0] - robotCoord[0]) + abs(goalCoord[1] - robotCoord[1])
+        
+        return allDistances
+                                
 
 if __name__ == "__main__":
-    # TODO:
-    # Ler o ficheiro de input de sys.argv[1],
-    # Usar uma técnica de procura para resolver a instância,
-    # Retirar astara solução a partir do nó resultante,
-    # Imprimir para o standard output no formato indicado.
+    """ Ler o ficheiro de input de sys.argv[1],
+    Usar uma técnica de procura para resolver a instância,
+    Retirar astara solução a partir do nó resultante,
+    Imprimir para o standard output no formato indicado. """
 
+    # parse board input
     board = parse_instance(sys.argv[1])
 
     # Criar uma instância de RicochetRobots:
@@ -206,6 +198,7 @@ if __name__ == "__main__":
     # Obter o nó solução usando a procura A*:
     solution_node = astar_search(problem, problem.h)
 
+    # print and format solution
     string = ""
     actions = 0
     if (solution_node):
@@ -215,8 +208,4 @@ if __name__ == "__main__":
             actions += 1
     string = str(actions) + '\n' + string[:-1]
     print(string)
-
-
-
-
 

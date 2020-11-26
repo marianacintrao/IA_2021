@@ -11,6 +11,8 @@ from collections import deque
 
 from utils import *
 
+expandidos = 0
+gerados = 0
 
 class Problem:
     """The abstract class for a formal problem. You should subclass
@@ -75,6 +77,9 @@ class Node:
     an explanation of how the f and h values are handled. You will not need to
     subclass this class."""
 
+    # EXPANDIDOS = 0
+    # GERADOS = 0
+
     def __init__(self, state, parent=None, action=None, path_cost=0):
         """Create a search tree Node, derived from a parent by an action."""
         self.state = state
@@ -82,6 +87,7 @@ class Node:
         self.action = action
         self.path_cost = path_cost
         self.depth = 0
+
         if parent:
             self.depth = parent.depth + 1
 
@@ -93,16 +99,18 @@ class Node:
 
     def expand(self, problem):
         """List the nodes reachable in one step from this node."""
-        # print(problem.actions(self.state))
+        # self.EXPANDIDOS += 1
+        global expandidos
+        expandidos += 1
         return [self.child_node(problem, action)
                 for action in problem.actions(self.state)]
 
     def child_node(self, problem, action):
         """[Figure 3.10]"""
         next_state = problem.result(self.state, action)
-        # print("state.board: ", self.state.board.robots)
-        # print("new state.board: ", next_state.board.robots)
-        #print(self.state.board.robots, next_state.board.robots, action)
+        # self.GERADOS += 1
+        global gerados
+        gerados += 1
         next_node = Node(next_state, self, action, problem.path_cost(self.path_cost, self.state, action, next_state))
         return next_node
 
@@ -231,6 +239,8 @@ def depth_first_graph_search(problem):
     while frontier:
         node = frontier.pop()
         if problem.goal_test(node.state):
+            print("--- nos gerados:", gerados, "---")
+            print("--- nos expandidos:", expandidos, "---")
             return node
         explored.add(node.state)
         frontier.extend(child for child in node.expand(problem)
@@ -255,6 +265,8 @@ def breadth_first_graph_search(problem):
         for child in node.expand(problem):
             if child.state not in explored and child not in frontier:
                 if problem.goal_test(child.state):
+                    print("--- nos gerados:", gerados, "---")
+                    print("--- nos expandidos:", expandidos, "---")
                     return child
                 frontier.append(child)
     return None
@@ -276,25 +288,28 @@ def best_first_graph_search(problem, f, display=False):
     # print("1:")
     #print(problem.initial.board.robots)
     while frontier:
-        # print("2:")
         node = frontier.pop()
+        # print("-----")
+        # print("state id:", node.state.state_id)
+        # if (node.parent):
+            # print("state id do pai:", node.parent.state.state_id)
+            # print("pai:", node.parent.state.board.robots)
+            # print("ação:", node.action)
         if problem.goal_test(node.state):
             if display:
                 print(len(explored), "paths have been expanded and", len(frontier), "paths remain in the frontier")
+
+            print("--- nos gerados:", gerados, "---")
+            print("--- nos expandidos:", expandidos, "---")
             return node
-        # print(node.action)
         explored.add(node.state)
         for child in node.expand(problem):
-            # print("3:")
             if child.state not in explored and child not in frontier:
-                # print("4:")
                 frontier.append(child)
             elif child in frontier:
                 if f(child) < frontier[child]:
-                    # print("5:")
                     del frontier[child]
                     frontier.append(child)
-        # print(node.action)
     return None
 
 
@@ -431,6 +446,7 @@ def astar_search(problem, h=None, display=False):
     You need to specify the h function when you call astar_search, or
     else in your Problem subclass."""
     h = memoize(h or problem.h, 'h')
+    # print(lambda n:n.path_cost + h(n), "-------------")
     return best_first_graph_search(problem, lambda n: n.path_cost + h(n), display)
 
 
