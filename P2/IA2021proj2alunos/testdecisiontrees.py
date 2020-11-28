@@ -16,16 +16,24 @@ import imp
 import pickle
 
 origindir = ".\\solutions\\"
+# origindir = "./solutions/"
 files = os.listdir(origindir)
             
         
 #console color
-W  = '\033[0m'  # white (normal)
-R  = '\033[31m' # red
-G  = '\033[32m' # green
-O  = '\033[33m' # orange
-B  = '\033[34m' # blue
-P  = '\033[35m' # purple
+# W  = '\033[0m'  # white (normal)
+# R  = '\033[31m' # red
+# G  = '\033[32m' # green
+# O  = '\033[33m' # orange
+# B  = '\033[34m' # blue
+# P  = '\033[35m' # purple
+#console color
+W  = ''  # white (normal)
+R  = '' # red
+G  = '' # green
+O  = '' # orange
+B  = '' # blue
+P  = '' # purple
 
 
 
