@@ -18,7 +18,7 @@ def incerteza(p, n):
     xlog = np.log2(x)
     return (-P * xlog[0]) - (N * xlog[1])
 
-def createTreeAux(D, Y, noise = False, f_index = 0):
+def createTreeAux(D, Y, noise = False, f_index = -1):
     
     total = len(Y)
     n = Y.count(0)
@@ -54,6 +54,7 @@ def createTreeAux(D, Y, noise = False, f_index = 0):
     # feature com maior valor de GI
     feature_index = GI.index(max(GI))
     if max(GI) == 0:
+
         if feature_index == f_index:
             feature_index += 1
         L = [feature_index] 
@@ -69,14 +70,8 @@ def createTreeAux(D, Y, noise = False, f_index = 0):
                 Y1 += [Y[i]]
                 D1 += [D[i]]
 
-        if D0 == []:
-            return [1]
-        else:
-            L += [createTreeAux(D0, Y0, noise, feature_index)] 
-        if D1 == []:
-            return [0]
-        else:               
-            L += [createTreeAux(D1, Y1, noise, feature_index)]  
+        L += [createTreeAux(D0, Y0, noise, feature_index)] 
+        L += [createTreeAux(D1, Y1, noise, feature_index)]  
         return L              
 
     if max(GI) == 1:
@@ -110,12 +105,29 @@ def createdecisiontree(D,Y, noise = False):
     T = createTreeAux(D, Y)
     print(T)
 
-    return [0,0,1] # to remove
-    # return T
+    # return [0,0,1] # to remove
+    return T
 
 
-D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
-Y = [0, 1, 1, 0, 0, 1, 1, 0]
+# D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
+# Y = [0, 1, 1, 0, 0, 1, 1, 0]
+
+# vai entrar no max gi = 0:
+# D0 = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1]]
+# Y0 = [0, 1, 1, 0]
+#     vai entrar no max gi = 0:
+#     D0 = [[0, 0, 0], [0, 0, 1]]
+#     Y0 = [0, 1]
+        
+
+
+#     D1 = [[[0, 1, 0], [0, 1, 1]]
+#     Y1 = [1, 0]
+
+
+
+# D1 = [[1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
+# Y1 = [0, 1, 1, 0]
 
 
 # # este afinal estava certo, passei foi o teste mal
