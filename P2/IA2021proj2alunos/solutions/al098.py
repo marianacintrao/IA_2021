@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 Grupo al098
-Student id #92510
-Student id #93737
+Student id 93737
+Student id 92510
 """
-
-from collections import Counter
+# from collections import Counter
 import numpy as np
 
 def incerteza(p, n):
@@ -18,12 +17,19 @@ def incerteza(p, n):
     xlog = np.log2(x)
     return (-P * xlog[0]) - (N * xlog[1])
 
+def count_element(lst, e):
+    n = 0
+    for e in lst:
+        n += 1
+    return n
+
 def createTreeAux(D, Y, noise = False, f_index = -1):
     
     total = len(Y)
-    n = Y.count(0)
+    n = count_element(Y, 0)
     p = total - n
     initial_entropy = incerteza(p, n)
+
 
     features = len(D[0])  
 
@@ -40,8 +46,10 @@ def createTreeAux(D, Y, noise = False, f_index = -1):
             feature_Y_list += [[D[i][feature], Y[i]]]
 
         for e in [0, 1]:
-            p_instances = feature_Y_list.count([e, 1])
-            n_instances = feature_Y_list.count([e, 0])
+            # p_instances = feature_Y_list.count([e, 1])
+            # n_instances = feature_Y_list.count([e, 0])
+            p_instances = count_element(feature_Y_list, [e, 1])
+            n_instances = count_element(feature_Y_list, [e, 0])
             I = incerteza(p_instances, n_instances)
             incerteza_feature[e] = I
             resto += ((p_instances + n_instances) / total) * I
@@ -50,18 +58,23 @@ def createTreeAux(D, Y, noise = False, f_index = -1):
         incertezas += [incerteza_feature]
 
     # print(GI, incertezas)
+    
 
     # feature com maior valor de GI
-    feature_index = GI.index(max(GI))
-    if max(GI) == 0:
+    maxGI = max(GI)
+    feature_index = GI.index(maxGI)
+
+    L = []
+
+    if maxGI == 0:
 
         if feature_index == f_index:
             feature_index += 1
-        L = [feature_index] 
+            L = [feature_index] 
         D0 = []
         D1 = []
         Y0 = []
-        Y1 = []
+        Y1 = [] 
         for i in range(len(D)):
             if D[i][feature_index] == 0:
                 Y0 += [Y[i]]
@@ -72,72 +85,45 @@ def createTreeAux(D, Y, noise = False, f_index = -1):
 
         L += [createTreeAux(D0, Y0, noise, feature_index)] 
         L += [createTreeAux(D1, Y1, noise, feature_index)]  
-        return L              
+        # return L              
 
-    if max(GI) == 1:
+    elif maxGI == 1:
         L = [feature_index]
         for key in [0,1]:
             for i in range(len(D)):
                 if D[i][feature_index] == key:
                     L += [Y[i]]
                     break
-        return L
+        # return L
 
-    L = [feature_index]
-    for key in [0,1]:
-        if incertezas[feature_index][key] != 0:
-            new_D = []
-            new_Y = []
-            for i in range(len(Y)):
-                if D[i][feature_index] == key:
-                    new_D += [D[i]]
-                    new_Y += [Y[i]]
-            
-            L += [createTreeAux(new_D, new_Y)]
-        else:
-            for i in range(len(D)):
-                if D[i][feature_index] == key:
-                    L += [Y[i]]
-                    break
-    return L
+    else:
+        L = [feature_index]
+        for key in [0,1]:
+            if incertezas[feature_index][key] != 0:
+                new_D = []
+                new_Y = []
+                for i in range(len(Y)):
+                    if D[i][feature_index] == key:
+                        new_D += [D[i]]
+                        new_Y += [Y[i]]
+                
+                # lista = createTreeAux(new_D, new_Y)
+                # L += [createTreeAux(new_D, new_Y)]
+                L += [createTreeAux(new_D, new_Y, noise, feature_index)] 
+            else: # se a incerteza/entropia for 0, apenas queremos juntar 'a lista o devido valor de Y
+                for i in range(len(D)):
+                    if D[i][feature_index] == key:
+                        L += [Y[i]]
+                        break
+    return L    
 
 def createdecisiontree(D,Y, noise = False):
+
+    # print("D e Y:")
+    # print(D, Y)
     T = createTreeAux(D, Y)
-    print(T)
-
-    # return [0,0,1] # to remove
-    return T
-
-
-# D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
-# Y = [0, 1, 1, 0, 0, 1, 1, 0]
-
-# vai entrar no max gi = 0:
-# D0 = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1]]
-# Y0 = [0, 1, 1, 0]
-#     vai entrar no max gi = 0:
-#     D0 = [[0, 0, 0], [0, 0, 1]]
-#     Y0 = [0, 1]
-        
-
-
-#     D1 = [[[0, 1, 0], [0, 1, 1]]
-#     Y1 = [1, 0]
-
-
-
-# D1 = [[1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
-# Y1 = [0, 1, 1, 0]
-
-
-# # este afinal estava certo, passei foi o teste mal
-# D = [[0,0,0], [0,0,1], [0,1,0], [0,1,1], [1,0,0], [1,0,1], [1,1,0], [1,1,1]]
-# Y = [0, 1, 0, 1, 0, 1, 0, 1]
-
-# D = [[0,0], [0,1], [1,0], [1,1]]
-# Y = [0, 0, 0, 1]
-# createdecisiontree(D, Y)
-
-
-
-
+    # print("T:")
+    # print(T)
+    
+    return [0,0,1]
+    # return T
