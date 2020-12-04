@@ -15,7 +15,8 @@ import os
 import imp
 import pickle
 
-origindir = ".\\solutions\\"
+# origindir = ".\\solutions\\"
+origindir = "./solutions/"
 files = os.listdir(origindir)
             
         
@@ -77,6 +78,9 @@ for file in files:
                                     
                 print("<", idataset, "> #points >", D.shape[0], "#feat >", D.shape[1])
                 try:
+                    # print(D)
+                    # print(Y)
+                    # exit()
                     T = M.createdecisiontree(D,Y,noise=0)
                     Yp = classify(T,D)
                 
@@ -97,7 +101,6 @@ for file in files:
                             else:
                                 res = G+'OK (1)'+W                                
                     else:
-                        print("ENTROU AQUI ______________________")
                         res = R+'Erro (0)r'+W
                     print("    errors > ", err, "tree length", l, " ", res  )
                     #print("\nD", D, "\nY", Y)
