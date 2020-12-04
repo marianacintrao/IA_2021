@@ -29,7 +29,6 @@ B  = '\033[34m' # blue
 P  = '\033[35m' # purple
 
 
-
 def classify(T,data):
     
     data = np.array(data)
@@ -105,9 +104,9 @@ for file in files:
                     print("    errors > ", err, "tree length", l, " ", res  )
                     #print("\nD", D, "\nY", Y)
                     #print("tree > ", T)
-                    print("try2")
+                    # print("try2")
                 except:
-                    print("ERRO1")
+                    # print("ERRO1")
                     print(R+"Test failed")
             print("points", points, "/23", "short", pointsshort, "/2")
             

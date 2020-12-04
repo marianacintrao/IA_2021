@@ -18,12 +18,17 @@ def incerteza(p, n):
     xlog = np.log2(x)
     return (-P * xlog[0]) - (N * xlog[1])
 
+
+
 def createTreeAux(D, Y, noise = False, f_index = -1):
-    # print("aux")
+
     total = len(Y)
+
     p = Y.count(1)
     n = total - p
     initial_entropy = incerteza(p, n)
+    if initial_entropy == 0:
+        return [0, Y[0], Y[0]]
 
     features = len(D[0])
 
@@ -61,24 +66,17 @@ def createTreeAux(D, Y, noise = False, f_index = -1):
 
         GI += [initial_entropy - resto]
         incertezas += [incerteza_feature]
-    # print(GI)
-    # print("n0", n0)
-    # print("n1", n1)
-    # print("p0", p0)
-    # print("p1", p1)
 
     feature_index = GI.index(max(GI))
+    # print(GI)
     if max(GI) == 0:
 
-        if feature_index <= f_index:
-            feature_index = f_index + 1
-            if feature_index == total:
-                feature_index -= 1
-        L = [feature_index]
+        feature_index = f_index + 1
         D0 = []
         D1 = []
         Y0 = []
         Y1 = []
+
         for i in range(len(D)):
             if D[i][feature_index] == 0:
                 Y0 += [Y[i]]
@@ -87,16 +85,13 @@ def createTreeAux(D, Y, noise = False, f_index = -1):
                 Y1 += [Y[i]]
                 D1 += [D[i]]
 
-        if D0 == []:
-            return 1
-        if D1 == []:
-            return 0
-
-        L += [createTreeAux(D0, Y0, noise, feature_index)]
-        L += [createTreeAux(D1, Y1, noise, feature_index)]
+        L1 = createTreeAux(D0, Y0, noise, feature_index)
+        L2 = createTreeAux(D1, Y1, noise, feature_index)
+        if L1 != L2:
+            L = [feature_index, L1, L2]
+        else: # if L1 != L2:
+            L = L1
         return L
-
-
 
     if max(GI) == 1:
 
@@ -126,21 +121,47 @@ def createTreeAux(D, Y, noise = False, f_index = -1):
                     break
     return L
 
+# def shortenT(T):
+    # if isinstance(T[0], int) and isinstance(T[1], int)
+
 def createdecisiontree(D,Y, noise = False):
 
+ 
     Y_list = list(Y.tolist())
-    # print("D, Y_list")
-    # print(D, Y_list)
     T = createTreeAux(D, Y_list)
+    # T = shortenT(T)
+    # T = createTreeAux(D_list, Y_list)
+    # if len(T) == 1:
+    #     T = [0, T[0], T[0]]
     print(T)
 
     # return [0,0,1] # to remove
     return T
 
 
+D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
+Y = np.array([0, 1, 1, 0, 0, 1, 1, 0])
+# D = [[0, 0], [0, 1], [1, 0], [1, 1]]
+# Y = np.array([0, 0, 0, 0])
+
+# D = [[0, 0], [0, 1], [1, 0], [1, 1]]
+# Y = np.array([0, 0, 0, 1])
+# D = [[0, 0], [0, 1], [1, 0], [1, 1]]
+# Y = np.array([0, 0, 1, 1])
+# D = [[0, 0], [0, 1], [1, 0], [1, 1]]
+# Y = np.array([0, 1, 1, 1])
+# D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
+# Y = np.array([0, 1, 0, 1, 0, 1, 0, 1])
 # D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
 # Y = np.array([0, 1, 1, 0, 0, 1, 1, 0])
-
+# D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
+# Y = np.array([0, 1, 0, 1, 1, 1, 1, 1])
+# D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
+# Y = np.array([0, 1, 1, 0, 0, 1, 1, 0])
+# D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
+# Y = np.array([0, 0, 1, 1, 1, 1, 0, 0])
+# D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
+# Y = np.array([1, 0, 0, 0, 0, 0, 0, 1])
 
 # vai entrar no max gi = 0:
 # D0 = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1]]
@@ -151,105 +172,17 @@ def createdecisiontree(D,Y, noise = False):
 
 
 
-#     D1 = [[[0, 1, 0], [0, 1, 1]]
-#     Y1 = [1, 0]
+createdecisiontree(D, Y)
 
 
-
-# D1 = [[1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
-# Y1 = [0, 1, 1, 0]
-
-
-# # este afinal estava certo, passei foi o teste mal
-# D = [[0,0,0], [0,0,1], [0,1,0], [0,1,1], [1,0,0], [1,0,1], [1,1,0], [1,1,1]]
-# Y = [0, 1, 0, 1, 0, 1, 0, 1]
-
-# D = [[0,0], [0,1], [1,0], [1,1]]
-# Y = [0, 0, 0, 1]
-# D = [[0, 0], [0, 1], [1, 0], [1, 1]]
-# Y = np.array([0, 0, 0, 0])
-
-# [[0 0], [0 1], [1 0], [1 1]]
-# [0 0 0 1]
-
-# [[0 0]
-#  [0 1]
-#  [1 0]
-#  [1 1]]
-# [0 0 1 1]
-
-# [[0 0]
-#  [0 1]
-#  [1 0]
-#  [1 1]]
-# [0 0 1 1]
-
-# [[0 0]
-#  [0 1]
-#  [1 0]
-#  [1 1]]
-# [0 1 1 1]
-
-# [[0 0]
-#  [0 1]
-#  [1 0]
-#  [1 1]]
-# [0 1 1 1]
-
-# [[0 0]
-#  [0 1]
-#  [1 0]
-#  [1 1]]
-# [0 1 1 1]
-
-# [[0 0 0]
-#  [0 0 1]
-#  [0 1 0]
-#  [0 1 1]
-#  [1 0 0]
-#  [1 0 1]
-#  [1 1 0]
-#  [1 1 1]]
-# [0 1 0 1 0 1 0 1]
-
-# [[0 0 0]
-#  [0 0 1]
-#  [0 1 0]
-#  [0 1 1]
-#  [1 0 0]
-#  [1 0 1]
-#  [1 1 0]
-#  [1 1 1]]
-# [0 1 0 1 1 1 1 1]
-
-# [[0 0 0]
-#  [0 0 1]
-#  [0 1 0]
-#  [0 1 1]
-#  [1 0 0]
-#  [1 0 1]
-#  [1 1 0]
-#  [1 1 1]]
-# [0 1 1 0 0 1 1 0]
-
-# [[0 0 0]
-#  [0 0 1]
-#  [0 1 0]
-#  [0 1 1]
-#  [1 0 0]
-#  [1 0 1]
-#  [1 1 0]
-#  [1 1 1]]
-# [0 0 1 1 1 1 0 0]
-
-# [[0 0 0]
-#  [0 0 1]
-#  [0 1 0]
-#  [0 1 1]
-#  [1 0 0]
-#  [1 0 1]
-#  [1 1 0]
-#  [1 1 1]]
-# [1 0 0 0 0 0 0 1]
-
-# createdecisiontree(D, Y)
+# < 22 > #points > 5000 #feat > 12
+# [[ True  True  True ...  True False False]
+#  [ True  True  True ... False False False]
+#  [False False False ... False False False]
+#  ...
+#  [ True  True False ...  True  True False]
+#  [ True  True  True ...  True False  True]
+#  [False False False ... False  True  True]]
+# [False  True  True ...  True  True  True]
+# Test failed
+# points 0 /23 short 0 /2
