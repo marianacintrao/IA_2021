@@ -121,18 +121,10 @@ def createTreeAux(D, Y, noise = False, f_index = -1):
                     break
     return L
 
-# def shortenT(T):
-    # if isinstance(T[0], int) and isinstance(T[1], int)
-
 def createdecisiontree(D,Y, noise = False):
 
- 
     Y_list = list(Y.tolist())
     T = createTreeAux(D, Y_list)
-    # T = shortenT(T)
-    # T = createTreeAux(D_list, Y_list)
-    # if len(T) == 1:
-    #     T = [0, T[0], T[0]]
     print(T)
 
     # return [0,0,1] # to remove
