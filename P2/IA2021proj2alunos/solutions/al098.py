@@ -23,14 +23,16 @@ def incerteza(p, n):
 
 
 
-def createTreeAux(D, Y, noise = False, f_index = -1):
+def createTreeAux(D, Y, noise = False, f_index = -1, f_list = []):
     total = len(Y)
 
     p = Y.count(1)
     n = total - p
     initial_entropy = incerteza(p, n)
     if initial_entropy == 0:
-        return [0, Y[0], Y[0]]
+        if Y[0]:
+            return [0, 1, 1]
+        return [0, 0, 0]
 
     ''' get number of features '''
     features = len(D[0])
@@ -73,7 +75,6 @@ def createTreeAux(D, Y, noise = False, f_index = -1):
 
     maxGI = max(GI)
     feature_index = GI.index(maxGI)
-    # print(GI)
     if maxGI == 0:
         ''' no information gain '''
         ''' returns a recursive function call for each of the right and left branches '''
@@ -85,38 +86,39 @@ def createTreeAux(D, Y, noise = False, f_index = -1):
         ''' right tree branch '''
         Y0 = []
         Y1 = []
-
-        for i in range(len(D)):
-            if D[i][feature_index] == 0:
-                Y0 += [Y[i]]
-                D0 += [D[i]]
+        while (True):
+            D0 = []
+            D1 = []
+            Y0 = []
+            Y1 = []
+            for i in range(len(D)):
+                if D[i][feature_index] == 0:
+                    Y0 += [Y[i]]
+                    D0 += [D[i]]
+                elif D[i][feature_index] == 1:
+                    Y1 += [Y[i]]
+                    D1 += [D[i]]
+            if D0 == [] or D1 == []:
+                feature_index += 1
             else:
-                Y1 += [Y[i]]
-                D1 += [D[i]]
+                break
 
         ''' recursively build the left branch '''
-        L1 = createTreeAux(D0, Y0, noise, feature_index)
+        L1 = createTreeAux(D0, Y0, noise, feature_index, f_list)
         ''' recursively build the right branch '''
-        L2 = createTreeAux(D1, Y1, noise, feature_index)
+        L2 = createTreeAux(D1, Y1, noise, feature_index, f_list)
+        # print(L1)
+        # print(L2)
 
-        if L1 != L2:
-            L = [feature_index, L1, L2]
-        else: # if L1 != L2:
+        if L1 == L2:
             ''' avoid long trees '''
             ''' por exemplo:
                 [0, [1, [2, 0, 1], [2, 1, 0]], [1, [2, 0, 1], [2, 1, 0]]] -> [1, [2, 0, 1], [2, 1, 0]] '''
             L = L1
-        return L
-
-    if maxGI == initial_entropy:
-        ''' maximum information gain '''
-        ''' returns the specific Y value '''
-        L = [feature_index]
-        for key in [0,1]:
-              for i in range(len(D)):
-                if D[i][feature_index] == key:
-                    L += [Y[i]]
-                    break
+        if L1[1] == L2[1]:
+            L = [L1[0], L1[1], [feature_index, L1[2], L2[2]]]
+        else: #elif L1 != L2:
+            L = [feature_index, L1, L2]
         return L
 
     ''' if the information gain is neither maximum or minimum,
@@ -131,70 +133,51 @@ def createTreeAux(D, Y, noise = False, f_index = -1):
                 if D[i][feature_index] == key:
                     new_D += [D[i]]
                     new_Y += [Y[i]]
-            L += [createTreeAux(new_D, new_Y)]
+            L += [createTreeAux(new_D, new_Y)] 
         else:
             for i in range(len(D)):
                 if D[i][feature_index] == key:
-                    L += [Y[i]]
+                    if Y[i]:
+                        L += [1]
+                    else:
+                        L += [0]
                     break
+    L1 = L[1]
+    L2 = L[2]
+    if type(L1) == list and type(L2) == list and L1[1] == L2[1]:
+        # L = [feature_index, L1[0], L1[1]]
+        L = [L1[0], L1[1], [feature_index, L1[2], L2[2]]]
+
     return L
 
 def createdecisiontree(D,Y, noise = False):
 
     ''' transfrom numpy array into list '''
     Y_list = list(Y.tolist())
-
+    # [11, [6, [1, 1, [3, 0, [4, 0, 1]]], [4, 0, [3, 0, 1]]], [6, [1, 1, [3, 0, [4, 0, 1]]], 1]]
     ''' call the recursive function '''
     T = createTreeAux(D, Y_list)
     print(T)
 
     return T
 
+#  [11, [6, [1, 1, [3, 0, [4, 0, 1]]], [4, 0, [3, 0, 1]]], [6, [1, 1, [3, 0, [4, 0, 1]]], 1]]
 
-# D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
-# Y = np.array([0, 1, 1, 0, 0, 1, 1, 0])
-# D = [[0, 0], [0, 1], [1, 0], [1, 1]]
-# Y = np.array([0, 0, 0, 0])
+#  L1 = [6, [1, 1, [3, 0, [4, 0, 1]]], [4, 0, [3, 0, 1]]]
+#  L1feature = 
+#  L2 = [6, [1, 1, [3, 0, [4, 0, 1]]], 1]
+D = [[0, 0], [0, 1], [1, 0], [1, 1]]
+Y = np.array([0, 0, 0, 1])
+createdecisiontree(D, Y)
+#                          11
+#                  6               6
+#         padrao      val1   padrao    1
+# # [6, [1, 1, [3, 0, [4, 0, 1]]], [4, 0, [3, 0, 1]]
+# # [6, [1, 1, [3, 0, [4, 0, 1]]], 1]
 
-# D = [[0, 0], [0, 1], [1, 0], [1, 1]]
-# Y = np.array([0, 0, 0, 1])
-# D = [[0, 0], [0, 1], [1, 0], [1, 1]]
-# Y = np.array([0, 0, 1, 1])
-# D = [[0, 0], [0, 1], [1, 0], [1, 1]]
-# Y = np.array([0, 1, 1, 1])
-# D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
-# Y = np.array([0, 1, 0, 1, 0, 1, 0, 1])
-# D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
-# Y = np.array([0, 1, 1, 0, 0, 1, 1, 0])
-# D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
-# Y = np.array([0, 1, 0, 1, 1, 1, 1, 1])
-# D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
-# Y = np.array([0, 1, 1, 0, 0, 1, 1, 0])
-# D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
-# Y = np.array([0, 0, 1, 1, 1, 1, 0, 0])
-# D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
-# Y = np.array([1, 0, 0, 0, 0, 0, 0, 1])
+#         if L1[1] == L2[1]:
+#             L = [L1[0], L1[1], [feature_index, L1[2], L2[2]]]
+        
 
-# vai entrar no max gi = 0:
-# D0 = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1]]
-# Y0 = [0, 1, 1, 0]
-#     vai entrar no max gi = 0:
-#     D0 = [[0, 0, 0], [0, 0, 1]]
-#     Y0 = [0, 1]
-
-
-
-# createdecisiontree(D, Y)
-
-
-# < 22 > #points > 5000 #feat > 12
-# [[ True  True  True ...  True False False]
-#  [ True  True  True ... False False False]
-#  [False False False ... False False False]
-#  ...
-#  [ True  True False ...  True  True False]
-#  [ True  True  True ...  True False  True]
-#  [False False False ... False  True  True]]
-# [False  True  True ...  True  True  True]
-# Test failed
-# points 0 /23 short 0 /2
+            
+# [6, [1, 1, [3, 0, [4, 0, 1]]], [11, [4, 0,1 [3, 0, 1]], 1]]
