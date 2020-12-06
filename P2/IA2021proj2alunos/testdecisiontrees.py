@@ -15,8 +15,7 @@ import os
 import imp
 import pickle
 
-# origindir = ".\\solutions\\"
-origindir = "./solutions/"
+origindir = ".\\solutions\\"
 files = os.listdir(origindir)
             
         
@@ -118,9 +117,6 @@ for file in files:
                 print("dataset > ", idataset, "#points >", D.shape[0], "#feat >", D.shape[1])
                 #print("\nD", D, "\nY", Y)
                 try:
-                    # print(D)
-                    # print(Y)
-                    # exit()
                     Tc = M.createdecisiontree(D,Y,noise=0.1)
                     Ytrain = classify(Tc,D)
                     Ytest = classify(Tc,Dt)
@@ -146,11 +142,11 @@ for file in files:
             
             
             print(P+"\n\n\t Result\n\n"+W)
-            print("tree no noise", points, "/27", "short", pointsshort, "/2")
+            print("tree no noise", points, "/26", "short", pointsshort, "/2")
             print("tree noise", points2, "/4", "good in test", pointsgen, "/4")
-            print("points",round(points/27*8,1),"+ reduced tree ", round(pointsshort/2*3,1), "+ noise", round(pointsgen/4*3,1))
-            C.append([file,round(points/27*8,1),round(pointsshort/2*3,1),round(pointsgen/4*3,1)])
-            print("\nExpected grade:\t", round(points/27*8,1)+round(pointsshort/2*3,1)+round(pointsgen/4*3,1),"(/14)+hidden tests (4pt)+report (2pt)")
+            print("points",round(points/26*8,1),"+ reduced tree ", round(pointsshort/2*3,1), "+ noise", round(pointsgen/4*3,1))
+            C.append([file,round(points/26*8,1),round(pointsshort/2*3,1),round(pointsgen/4*3,1)])
+            print("\nExpected grade:\t", round(points/26*8,1)+round(pointsshort/2*3,1)+round(pointsgen/4*3,1),"(/14)+hidden tests (4pt)+report (2pt)")
     except:
             print(R+"Error loading file, or running!")
             

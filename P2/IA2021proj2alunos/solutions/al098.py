@@ -5,9 +5,6 @@ Student id #92510
 Student id #93737
 """
 
-# calcular probabilidades dos ganhos e definir gi min de profundidade e retornar 
-# o valor mais provavel (valor do y)
-
 from collections import Counter
 import numpy as np
 
@@ -59,7 +56,12 @@ def calculate(D, Y, total, p, n, initial_entropy, features, incertezas, GI):
 def shortenTree(L):
     ''' avoid long trees '''
     ''' por exemplo:
-    [0, [1, [2, 0, 1], [2, 1, 0]], [1, [2, 0, 1], [2, 1, 0]]] -> [1, [2, 0, 1], [2, 1, 0]] '''
+    [0, [1, [2, 0, 1], [2, 1, 0]], [1, [2, 0, 1], [2, 1, 0]]] 
+    -> [1, [2, 0, 1], [2, 1, 0]] 
+    ou 
+    [11, [6, [1, 1, [3, 0, [4, 0, 1]]], [4, 0, [3, 0, 1]]], [6, [1, 1, [3, 0, [4, 0, 1]]], 1]]
+    -> [6, [1, 1, [3, 0, [4, 0, 1]]], [11, [4, 0,1 [3, 0, 1]], 1]]
+    '''
 
     left = L[1]
     right = L[2]
@@ -80,7 +82,7 @@ def shortenTree(L):
     =================================================
 '''
 def createTreeAux(D, Y, noise = False, f_index = -1):
-    # print("entrou aqui")
+
     TrueNoise = False
     if noise:
         TrueNoise = True
@@ -99,18 +101,16 @@ def createTreeAux(D, Y, noise = False, f_index = -1):
     GI = []
     calculate(D, Y, total, p, n, initial_entropy, features, incertezas, GI)
 
-    # print("entrou aqui 1")
     maxGI = max(GI)
     feature_index = GI.index(maxGI)
 
     L = []
 
     if maxGI == 0 or TrueNoise:
-        # print("-----")
-        # print("entrou aqui 2")
-        # print("features:", len(D[0]), "total:", len(Y))
-        ''' no information gain '''
-        ''' returns a recursive function call for each of the right and left branches '''
+
+        ''' No information gain '''
+        ''' Returns a recursive function call for each of the right and left branches of a feature.
+            The chosen feature has not been expanded yet. '''
 
         feature_index = f_index + 1
         ''' left tree branch '''
@@ -119,9 +119,11 @@ def createTreeAux(D, Y, noise = False, f_index = -1):
         ''' right tree branch '''
         Y0 = []
         Y1 = []
+
         while (True):
-            # print("feature_index", feature_index)
-            if feature_index == len(D[0]) and TrueNoise:
+            if (feature_index == len(D[0]) or maxGI <= 0.05) and TrueNoise:
+            ''' This is the part that concerns the tests with noise 
+            ''' 
                 positive = 0
                 negative = 0
                 for e in Y:
@@ -131,8 +133,8 @@ def createTreeAux(D, Y, noise = False, f_index = -1):
                         negative += 1
                 if positive > negative:
                     return 1
-                return 0
-
+                return 0 
+            ''' ''' ''' ''' ''' ''' ''' ''' ''' ''' ''' ''' ''' '''
             D0 = []
             D1 = []
             Y0 = []
@@ -148,18 +150,17 @@ def createTreeAux(D, Y, noise = False, f_index = -1):
                 feature_index += 1
             else:
                 break
-        # print("saiu do while")
+
         ''' recursively build the left branch '''
         left = createTreeAux(D0, Y0, TrueNoise, feature_index)
         ''' recursively build the right branch '''
         right = createTreeAux(D1, Y1, TrueNoise, feature_index)
+
         L = [feature_index, left, right]
     
     else:
-        # print("entrou aqui 3")
-
         ''' if the information gain is not 0, call the recursive function on the
-        feature element(s) that stil has(have) entropy (incerteza != 0) '''
+            feature element(s) that stil has(have) entropy (incerteza != 0) '''
         L = [feature_index]
 
         for key in [0,1]:
@@ -195,31 +196,6 @@ def createdecisiontree(D,Y, noise = False):
         T = createTreeAux(D, Y_list, noise = True)
     else:
         T = createTreeAux(D, Y_list)
-    print(T)
     return T
 
-# D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
-# Y = np.array([0, 0, 0, 1, 1, 0, 1, 1])
-D = [[0, 0], [0, 1], [1, 0], [1, 1]]
-Y = np.array([0, 0, 0, 1])
-createdecisiontree(D, Y, noise = True)
-        
-#  l=  [11, [6, [1, 1, [3, 0, [4, 0, 1]]], [4, 0, [3, 0, 1]]], [6, [1, 1, [3, 0, [4, 0, 1]]], 1]]
-
-#  L1 = [6, [1, 1, [3, 0, [4, 0, 1]]], [4, 0, [3, 0, 1]]]
-#  L2 = [6, [1, 1, [3, 0, [4, 0, 1]]], 1]
-
-#  [6, [1, 1, [3, 0, [4, 0, 1]], [11, [4, 0, [3, 0, 1], 1]
-
-#  L = [L1(0), L[1], [feature, L1[2], L2[2]]]
-
-#                         11
-#             6                       6
-#     lst rep    val1         lst rep   val2
-
-
-# [array( [False, False, False, True, False, False, False, False, False, False, False]),      TRUE
-# array(  [False, False, False, True, False, False, False, False, False, False, False]),      TRUE
-# array(  [False, False, False, True, False, False, False, False, False, False, False]),      TRUE
-# array(  [False, False, False, True, False, False, False, False, False, False, False])]      FALSE
 
