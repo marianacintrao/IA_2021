@@ -118,6 +118,9 @@ for file in files:
                 print("dataset > ", idataset, "#points >", D.shape[0], "#feat >", D.shape[1])
                 #print("\nD", D, "\nY", Y)
                 try:
+                    # print(D)
+                    # print(Y)
+                    # exit()
                     Tc = M.createdecisiontree(D,Y,noise=0.1)
                     Ytrain = classify(Tc,D)
                     Ytest = classify(Tc,Dt)
