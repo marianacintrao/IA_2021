@@ -94,7 +94,6 @@ def createTreeAux(D, Y, noise = False, f_index = -1):
             return 1
         return 0
 
-
     features = 0
     incertezas = []
     GI = []
