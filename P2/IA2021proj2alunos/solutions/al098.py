@@ -21,25 +21,8 @@ def incerteza(p, n):
     xlog = np.log2(x)
     return (-P * xlog[0]) - (N * xlog[1])
 
-
-
-def createTreeAux(D, Y, noise = False, f_index = -1, f_list = []):
-    total = len(Y)
-
-    p = Y.count(1)
-    n = total - p
-    initial_entropy = incerteza(p, n)
-    if initial_entropy == 0:
-        if Y[0]:
-            return [0, 1, 1]
-        return [0, 0, 0]
-
-    ''' get number of features '''
+def calculate(D, Y, total, p, n, initial_entropy, features, incertezas, GI):
     features = len(D[0])
-
-    ''' caculate GI and entropies '''
-    incertezas = []
-    GI = []
 
     for feature in range(0, features):
         resto = 0
@@ -73,9 +56,60 @@ def createTreeAux(D, Y, noise = False, f_index = -1, f_list = []):
         GI += [initial_entropy - resto]
         incertezas += [incerteza_feature]
 
+def shortenTree(L):
+    ''' avoid long trees '''
+    ''' por exemplo:
+    [0, [1, [2, 0, 1], [2, 1, 0]], [1, [2, 0, 1], [2, 1, 0]]] -> [1, [2, 0, 1], [2, 1, 0]] '''
+
+    left = L[1]
+    right = L[2]
+    feature_index = L[0]
+
+    if left == right:
+        L = left
+
+    if type(left) == list and type(right) == list and (len(left) > 1) and (len(right) > 1):
+        if left[1] == right[1]:
+            L = [left[0], left[1], [feature_index, left[2], right[2]]]
+        elif left[2] == right[2]:
+            L = [left[0], [feature_index, left[1], right[1]], left[2]]
+    return L
+
+''' =================================================
+                Main Recursive Function
+    =================================================
+'''
+def createTreeAux(D, Y, noise = False, f_index = -1):
+    # print("entrou aqui")
+    TrueNoise = False
+    if noise:
+        TrueNoise = True
+    total = len(Y)
+
+    p = Y.count(1)
+    n = total - p
+    initial_entropy = incerteza(p, n)
+    if initial_entropy == 0:
+        if Y[0]:
+            return 1
+        return 0
+
+
+    features = 0
+    incertezas = []
+    GI = []
+    calculate(D, Y, total, p, n, initial_entropy, features, incertezas, GI)
+
+    # print("entrou aqui 1")
     maxGI = max(GI)
     feature_index = GI.index(maxGI)
-    if maxGI == 0:
+
+    L = []
+
+    if maxGI == 0 or TrueNoise:
+        # print("-----")
+        # print("entrou aqui 2")
+        # print("features:", len(D[0]), "total:", len(Y))
         ''' no information gain '''
         ''' returns a recursive function call for each of the right and left branches '''
 
@@ -87,6 +121,19 @@ def createTreeAux(D, Y, noise = False, f_index = -1, f_list = []):
         Y0 = []
         Y1 = []
         while (True):
+            # print("feature_index", feature_index)
+            if feature_index == len(D[0]) and TrueNoise:
+                positive = 0
+                negative = 0
+                for e in Y:
+                    if e:
+                        positive += 1
+                    else:
+                        negative += 1
+                if positive > negative:
+                    return 1
+                return 0
+
             D0 = []
             D1 = []
             Y0 = []
@@ -102,82 +149,78 @@ def createTreeAux(D, Y, noise = False, f_index = -1, f_list = []):
                 feature_index += 1
             else:
                 break
-
+        # print("saiu do while")
         ''' recursively build the left branch '''
-        L1 = createTreeAux(D0, Y0, noise, feature_index, f_list)
+        left = createTreeAux(D0, Y0, TrueNoise, feature_index)
         ''' recursively build the right branch '''
-        L2 = createTreeAux(D1, Y1, noise, feature_index, f_list)
-        # print(L1)
-        # print(L2)
+        right = createTreeAux(D1, Y1, TrueNoise, feature_index)
+        L = [feature_index, left, right]
+    
+    else:
+        # print("entrou aqui 3")
 
-        if L1 == L2:
-            ''' avoid long trees '''
-            ''' por exemplo:
-                [0, [1, [2, 0, 1], [2, 1, 0]], [1, [2, 0, 1], [2, 1, 0]]] -> [1, [2, 0, 1], [2, 1, 0]] '''
-            L = L1
-        if L1[1] == L2[1]:
-            L = [L1[0], L1[1], [feature_index, L1[2], L2[2]]]
-        else: #elif L1 != L2:
-            L = [feature_index, L1, L2]
-        return L
+        ''' if the information gain is not 0, call the recursive function on the
+        feature element(s) that stil has(have) entropy (incerteza != 0) '''
+        L = [feature_index]
 
-    ''' if the information gain is neither maximum or minimum,
-        call the recursive function on the feature element(s) that stil has(have) entropy (incerteza != 0) '''
-    L = [feature_index]
-
-    for key in [0,1]:
-        if incertezas[feature_index][key] != 0:
-            new_D = []
-            new_Y = []
-            for i in range(len(Y)):
-                if D[i][feature_index] == key:
-                    new_D += [D[i]]
-                    new_Y += [Y[i]]
-            L += [createTreeAux(new_D, new_Y)] 
-        else:
-            for i in range(len(D)):
-                if D[i][feature_index] == key:
-                    if Y[i]:
-                        L += [1]
-                    else:
-                        L += [0]
-                    break
-    L1 = L[1]
-    L2 = L[2]
-    if type(L1) == list and type(L2) == list and L1[1] == L2[1]:
-        # L = [feature_index, L1[0], L1[1]]
-        L = [L1[0], L1[1], [feature_index, L1[2], L2[2]]]
-
+        for key in [0,1]:
+            if incertezas[feature_index][key] != 0:
+                new_D = []
+                new_Y = []
+                for i in range(len(Y)):
+                    if D[i][feature_index] == key:
+                        new_D += [D[i]]
+                        new_Y += [Y[i]]
+                L += [createTreeAux(new_D, new_Y, TrueNoise)] 
+            else:
+                for i in range(len(D)):
+                    if D[i][feature_index] == key:
+                        if Y[i]:
+                            L += [1]
+                        else:
+                            L += [0]
+                        break
+    L = shortenTree(L)
     return L
 
 def createdecisiontree(D,Y, noise = False):
-
     ''' transfrom numpy array into list '''
     Y_list = list(Y.tolist())
-    # [11, [6, [1, 1, [3, 0, [4, 0, 1]]], [4, 0, [3, 0, 1]]], [6, [1, 1, [3, 0, [4, 0, 1]]], 1]]
     ''' call the recursive function '''
-    T = createTreeAux(D, Y_list)
+    T = []
+    if len(set(Y)) == 1:
+        if Y[0]:
+            return [0, 1, 1]
+        return [0, 0, 0]
+    if noise:
+        T = createTreeAux(D, Y_list, noise = True)
+    else:
+        T = createTreeAux(D, Y_list)
     print(T)
-
     return T
 
-#  [11, [6, [1, 1, [3, 0, [4, 0, 1]]], [4, 0, [3, 0, 1]]], [6, [1, 1, [3, 0, [4, 0, 1]]], 1]]
-
-#  L1 = [6, [1, 1, [3, 0, [4, 0, 1]]], [4, 0, [3, 0, 1]]]
-#  L1feature = 
-#  L2 = [6, [1, 1, [3, 0, [4, 0, 1]]], 1]
+# D = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
+# Y = np.array([0, 0, 0, 1, 1, 0, 1, 1])
 D = [[0, 0], [0, 1], [1, 0], [1, 1]]
 Y = np.array([0, 0, 0, 1])
-createdecisiontree(D, Y)
-#                          11
-#                  6               6
-#         padrao      val1   padrao    1
-# # [6, [1, 1, [3, 0, [4, 0, 1]]], [4, 0, [3, 0, 1]]
-# # [6, [1, 1, [3, 0, [4, 0, 1]]], 1]
-
-#         if L1[1] == L2[1]:
-#             L = [L1[0], L1[1], [feature_index, L1[2], L2[2]]]
+createdecisiontree(D, Y, noise = True)
         
+#  l=  [11, [6, [1, 1, [3, 0, [4, 0, 1]]], [4, 0, [3, 0, 1]]], [6, [1, 1, [3, 0, [4, 0, 1]]], 1]]
 
-            
-# [6, [1, 1, [3, 0, [4, 0, 1]]], [11, [4, 0,1 [3, 0, 1]], 1]]
+#  L1 = [6, [1, 1, [3, 0, [4, 0, 1]]], [4, 0, [3, 0, 1]]]
+#  L2 = [6, [1, 1, [3, 0, [4, 0, 1]]], 1]
+
+#  [6, [1, 1, [3, 0, [4, 0, 1]], [11, [4, 0, [3, 0, 1], 1]
+
+#  L = [L1(0), L[1], [feature, L1[2], L2[2]]]
+
+#                         11
+#             6                       6
+#     lst rep    val1         lst rep   val2
+
+
+# [array( [False, False, False, True, False, False, False, False, False, False, False]),      TRUE
+# array(  [False, False, False, True, False, False, False, False, False, False, False]),      TRUE
+# array(  [False, False, False, True, False, False, False, False, False, False, False]),      TRUE
+# array(  [False, False, False, True, False, False, False, False, False, False, False])]      FALSE
+
